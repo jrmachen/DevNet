@@ -8,10 +8,10 @@ def main():
     # Device connection parameters - TO BE FILLED IN
     device = {
         'device_type': 'cisco_ios',  # Change to your device type
-        'host': '',  # Add IP address or hostname
-        'username': '',  # Add username
-        'password': '',  # Add password
-        'secret': '',  # Add enable secret (optional)
+        'host': 'x.x.x.x',  # Add IP address or hostname
+        'username': 'jrmachen',  # Add username
+        'password': 'xxxxxx',  # Add password
+        #'secret': '',  # Add enable secret (optional)
     }
 
     try:
