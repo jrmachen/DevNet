@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<router>
+    <hostname>Router01</hostname>
+    <domain_name>example.com</domain_name>
+
+    <interfaces>
+        <interface>
+            <name>GigabitEthernet0/0</name>
+            <ip_address>192.168.1.1</ip_address>
+            <subnet_mask>255.255.255.0</subnet_mask>
+            <description>LAN Interface</description>
+            <status>up</status>
+        </interface>
+        <interface>
+            <name>GigabitEthernet0/1</name>
+            <ip_address>10.0.0.1</ip_address>
+            <subnet_mask>255.255.255.252</subnet_mask>
+            <description>WAN Interface</description>
+            <status>up</status>
+        </interface>
+        <interface>
+            <name>Loopback0</name>
+            <ip_address>1.1.1.1</ip_address>
+            <subnet_mask>255.255.255.255</subnet_mask>
+            <description>Management Interface</description>
+            <status>up</status>
+        </interface>
+    </interfaces>
+
+    <routing>
+        <ospf>
+            <process_id>1</process_id>
+            <router_id>1.1.1.1</router_id>
+            <networks>
+                <network>
+                    <network>192.168.1.0</network>
+                    <wildcard>0.0.0.255</wildcard>
+                    <area>0</area>
+                </network>
+                <network>
+                    <network>10.0.0.0</network>
+                    <wildcard>0.0.0.3</wildcard>
+                    <area>0</area>
+                </network>
+            </networks>
+        </ospf>
+        <static_routes>
+            <route>
+                <destination>0.0.0.0</destination>
+                <mask>0.0.0.0</mask>
+                <next_hop>10.0.0.2</next_hop>
+            </route>
+        </static_routes>
+    </routing>
+
+    <acl>
+        <access_list>
+            <name>PERMIT_INTERNAL</name>
+            <type>standard</type>
+            <entries>
+                <entry>
+                    <sequence>10</sequence>
+                    <action>permit</action>
+                    <source>192.168.1.0 0.0.0.255</source>
+                </entry>
+                <entry>
+                    <sequence>20</sequence>
+                    <action>deny</action>
+                    <source>any</source>
+                </entry>
+            </entries>
+        </access_list>
+    </acl>
+
+    <dns_servers>
+        <server>8.8.8.8</server>
+        <server>8.8.4.4</server>
+    </dns_servers>
+
+    <ntp_servers>
+        <server>pool.ntp.org</server>
+    </ntp_servers>
+
+    <snmp>
+        <community>public</community>
+        <location>Data Center</location>
+        <contact>admin@example.com</contact>
+    </snmp>
+</router>
