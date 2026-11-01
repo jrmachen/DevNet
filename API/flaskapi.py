@@ -6,14 +6,12 @@ app = Flask(__name__)
 
 
 @app.route('/car', methods=['POST'])
-
 def create_car():
     data = request.json
     try:
         make = data.get('make')
         model = data.get('model')
         year = data.get('year')
-        car = Car(make, model, year)
 
         if not make or not model or not year:
             return jsonify({'error': 'Make, model, and year are required'}), 400
@@ -24,9 +22,6 @@ def create_car():
         return jsonify({'error': str(e)}), 400
 
 
-def protected():
-    return jsonify({'message': 'This is a protected route'})
-
 ###
 # Authentication logic
 ###
@@ -36,11 +31,6 @@ VALID_PASSWORD = 'secret'
 
 def check_authentication(username, password):
     return username == VALID_USERNAME and password == VALID_PASSWORD
-
-def authenitcate():
-    auth = request.authorization
-    if not auth or not check_authentication(auth.username, auth.password):
-        return jsonify({'error': 'Invalid credentials'}), 401
 
 def require_authentication(f):
     @wraps(f)
