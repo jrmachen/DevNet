@@ -1,11 +1,14 @@
+import argparse
 import getpass
 import os
+import sys
+import warnings
 
 import xmltodict
 from ncclient import manager
 
 
-HOST = "devnetsandboxiosxec8k.cisco.com"
+HOST = "devnetsandboxiosxec9k.cisco.com"
 INTERFACE_FILTER = """
 <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
     <interface>
@@ -20,52 +23,12 @@ INTERFACE_FILTER = """
     </interface>
 </interfaces>
 """
-INTERFACE_STATE_FILTER = """
-<interfaces-state xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
-    <interface>
-        <name/>
-        <oper-status/>
-    </interface>
-</interfaces-state>
-"""
 
 
 def get_interfaces(connection):
     """Retrieve operational interface details from the device."""
     response = connection.get(filter=("subtree", INTERFACE_FILTER))
-    response_data = xmltodict.parse(response.xml)
-
-    state_response = connection.get(filter=("subtree", INTERFACE_STATE_FILTER))
-    state_data = xmltodict.parse(state_response.xml)
-    state_interfaces = (
-        state_data.get("rpc-reply", {})
-        .get("data", {})
-        .get("interfaces-state", {})
-        .get("interface", [])
-    )
-    if not isinstance(state_interfaces, list):
-        state_interfaces = [state_interfaces]
-    operational_status = {
-        interface["name"]: interface.get("oper-status", "unknown")
-        for interface in state_interfaces
-        if isinstance(interface, dict) and "name" in interface
-    }
-
-    interfaces = (
-        response_data.get("rpc-reply", {})
-        .get("data", {})
-        .get("interfaces", {})
-        .get("interface", [])
-    )
-    if not isinstance(interfaces, list):
-        interfaces = [interfaces]
-    for interface in interfaces:
-        if isinstance(interface, dict):
-            interface["oper-status"] = operational_status.get(
-                interface.get("name"), interface.get("oper-status", "unknown")
-            )
-
-    return response_data
+    return xmltodict.parse(response.xml)
 
 
 def display_interfaces(response_data):
@@ -100,25 +63,71 @@ def display_interfaces(response_data):
 
 
 def main():
-    username = os.environ.get("NETCONF_USERNAME", "jmache6")
+    parser = argparse.ArgumentParser(
+        description="Display interface status from a NETCONF-enabled IOS XE device."
+    )
+    parser.add_argument(
+        "host",
+        nargs="?",
+        default=os.environ.get("NETCONF_HOST", HOST),
+        help=f"Device IP address or DNS name (default: {HOST})",
+    )
+    parser.add_argument(
+        "-u",
+        "--username",
+        default=os.environ.get("NETCONF_USERNAME", "jmache6"),
+        help="NETCONF username (default: jmache6)",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=int(os.environ.get("NETCONF_PORT", "830")),
+        help="NETCONF-over-SSH port (default: 830)",
+    )
+    args = parser.parse_args()
+
     password = os.environ.get("NETCONF_PASSWORD")
     if not password:
-        password = getpass.getpass(f"NETCONF password for {username}: ")
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("error", getpass.GetPassWarning)
+                password = getpass.getpass(f"NETCONF password for {args.username}: ")
+        except getpass.GetPassWarning:
+            print(
+                "No secure terminal is available for the password prompt. "
+                "Run this script from a terminal that supports hidden input.",
+                file=sys.stderr,
+            )
+            return 1
 
     try:
         with manager.connect(
-            host=HOST,
-            port=830,
-            username=username,
+            host=args.host,
+            port=args.port,
+            username=args.username,
             password=password,
             hostkey_verify=False,
-            device_params={"name": "csr"},
+            device_params={"name": "iosxe"},
             timeout=30,
         ) as connection:
             display_interfaces(get_interfaces(connection))
     except Exception as error:
-        print(f"NETCONF request to {HOST} failed: {error}")
+        print(
+            f"NETCONF request to {args.host}:{args.port} failed: {error}",
+            file=sys.stderr,
+        )
+        if args.port == 830 and "SSH protocol banner" in str(error):
+            print(
+                "The host reset the connection before SSH/NETCONF started. "
+                "Confirm NETCONF is enabled and port 830 is exposed. "
+                "If the host is configured to offer the NETCONF SSH subsystem "
+                "on port 22, try --port 22; shell SSH access alone does not "
+                "guarantee that NETCONF is available.",
+                file=sys.stderr,
+            )
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

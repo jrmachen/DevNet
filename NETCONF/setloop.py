@@ -80,8 +80,8 @@ def main():
     # Device connection parameters
     device = {
         'host': '10.10.20.48',  # Replace with your device's IP
-        'username': 'developer',     # Replace with your username
-        'password': 'C1sco12345',     # Replace with your password
+        'username': 'jmache',     # Replace with your username
+        'password': 'HAf9#&38ptkfO',     # Replace with your password
         'port': 830             # Standard NETCONF port
     }
 
