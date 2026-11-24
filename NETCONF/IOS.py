@@ -84,9 +84,9 @@ def display_interfaces(interfaces_data: Dict[str, Any]) -> None:
 def main():
     # Device connection parameters
     device = {
-        'host': '10.10.20.48',  # Replace with your device's IP
-        'username': 'developer',     # Replace with your username
-        'password': 'C1sco12345',     # Replace with your password
+        'host': 'devnetsandboxiosxec8k.cisco.com',  # Replace with your device's IP
+        'username': 'jmache6',     # Replace with your username
+        'password': 'vJk8XF6lw4w&%',     # Replace with your password
         'port': 830             # Standard NETCONF port
     }
 

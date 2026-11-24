@@ -6,7 +6,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 HOST = "devnetsandboxiosxec8k.cisco.com"
 PORT = 443
 USER = "jmache6"
-PASSWORD = "56b5Up&WBL4iL$V"
+PASSWORD = "vJk8XF6lw4w&%"
 
 URL = f"https://{HOST}:{PORT}/restconf/data/ietf-interfaces:interfaces"
 
